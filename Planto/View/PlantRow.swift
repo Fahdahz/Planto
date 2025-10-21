@@ -44,10 +44,10 @@ struct PlantRow: View {
                 .buttonStyle(GlassButtonStyle())
             }
 
-            HStack(spacing: 8) {
-                PillBadge(icon: "sun.max.fill", text: plant.light.rawValue)
-                PillBadge(icon: "drop.fill", text: plant.waterAmountLabel)
-            }
+//            HStack(spacing: 8) {
+//                PillBadge(icon: "sun.max.fill", text: plant.light.rawValue)
+//                PillBadge(icon: "drop", text: plant.waterAmount)
+//            }
         }
         .glass()
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {

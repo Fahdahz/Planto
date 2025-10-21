@@ -16,35 +16,40 @@ struct PlantListView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
 
-                  
+                    // Title + divider
                     VStack(spacing: 8) {
                         HStack {
                             Text("My Plants 🌱")
-                                .font(.system(size: 34, weight: .bold))   // large title
+                                .font(.system(size: 34, weight: .bold))
                             Spacer()
                         }
-                        Divider().opacity(0.85)
-                            .background(Color.white.opacity(0.70))
+                        Divider()
+                            .frame(height: 1)
+                            .background(Color.white.opacity(0.25)) // visible on dark
                     }
                     .padding(.top, 8)
 
-                    // ---- Empty vs. List ----
+                    // ---- Empty vs. All Done vs. List ----
                     if vm.totalCount == 0 {
+                        // First-run start screen (matches sketch)
                         StartScreenView(onAdd: { startAdding() })
+                    } else if vm.allDone {
+                        // Full-screen celebration (no list)
+                        AllDoneScreen()
+                            .padding(.top, 12)
+                            .frame(maxWidth: .infinity)
+                            .transition(.opacity)
+                        Spacer(minLength: 120) // room above floating +
                     } else {
-                        // Progress / list screen (today reminder)
-                        if vm.allDone {
-                            AllDoneHero()
-                        } else {
-                            WaitingBar(completed: vm.completedCount, total: vm.totalCount)
-                        }
+                        // Today reminder: progress + list
+                        WaitingBar(completed: vm.completedCount, total: vm.totalCount)
 
                         VStack(spacing: 10) {
                             ForEach(vm.plants) { plant in
                                 PlantRow(
                                     plant: plant,
                                     onToggle: { vm.toggleDone(plant) },
-                                    onEdit: { startEditing(plant) },
+                                    onEdit:   { startEditing(plant) },
                                     onDelete: { vm.delete(plant) }
                                 )
                             }
@@ -57,16 +62,19 @@ struct PlantListView: View {
                 .padding(.horizontal, 16)
             }
 
+          
             // Show the floating + ONLY after at least one plant exists
             if vm.totalCount > 0 {
-                Button { startAdding() } label: {
+                Button(action: startAdding) {
                     Image(systemName: "plus")
                         .font(.title2.bold())
                         .padding(18)
                 }
-                .buttonStyle(GlassButtonStyle())
+                .buttonStyle(.glassProminent)
+                .tint(Color("GreenBtn"))
                 .padding(20)
             }
+
         }
         .sheet(isPresented: $vm.showingForm) {
             PlantFormSheet(
@@ -75,8 +83,9 @@ struct PlantListView: View {
                 onSave: handleSave,
                 onDelete: handleDeleteIfEditing
             )
-            .presentationDetents([.medium, .large])
-            .presentationBackground(.ultraThinMaterial)
+            .presentationDetents([.large])          // full height sheet
+            .presentationDragIndicator(.hidden)     // hide grabber
+            .presentationBackground(.thinMaterial)  // lighter chrome
         }
         .preferredColorScheme(.dark)
     }
@@ -110,7 +119,7 @@ struct PlantListView: View {
     }
 }
 
-// MARK: - Full-page start screen (exactly like the sketch: no card)
+// MARK: - Start screen (matches the sketch)
 private struct StartScreenView: View {
     var onAdd: () -> Void
 
@@ -118,14 +127,12 @@ private struct StartScreenView: View {
         VStack(spacing: 28) {
             Spacer(minLength: 10)
 
-           
             Image("Plant")
                 .resizable()
                 .scaledToFit()
-                .frame(height: 225)
+                .frame(height: 200)
                 .accessibilityHidden(true)
 
-            // Headline + paragraph
             VStack(spacing: 10) {
                 Text("Start your plant journey!")
                     .font(.system(size: 28, weight: .semibold))
@@ -139,74 +146,56 @@ private struct StartScreenView: View {
             }
             .frame(maxWidth: .infinity, alignment: .center)
 
-            // Solid green capsule button (like the sketch)
             Button(action: onAdd) {
                 Text("Set Plant Reminder")
                     .font(.headline)
                     .frame(maxWidth: 300, minHeight: 35)
-                
             }
-            .buttonStyle(.glassProminent)
+            .buttonStyle(.glassProminent)       // Liquid Glass look
             .tint(Color("GreenBtn"))
             .padding(.top, 95)
-            
+
             Spacer(minLength: 60)
         }
         .frame(maxWidth: .infinity, alignment: .top)
     }
 }
 
-// MARK: - Styles / helpers
+private struct AllDoneScreen: View {
+    var body: some View {
+        VStack(spacing: 24) {
+            Spacer(minLength: 10)
 
-/// solid green capsule (sketch look). Uses your "GreenBtn" color if present; falls back to a gradient.
-private struct GreenCapsuleButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .background(
-                Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color("GreenBtn", bundle: .main, default: Color.green.opacity(0.90)),
-                                Color("GreenBtn", bundle: .main, default: Color.green).opacity(0.75)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            )
-            .foregroundStyle(.white)
-            .overlay(
-                Capsule().stroke(.white.opacity(0.15), lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.35), radius: 16, x: 0, y: 10)
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            Image("PlantWink")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 200)
+                .shadow(radius: 12)
+                .padding(.top, 70)
+
+            Text("All Done! 🎉")
+                .font(.title2).bold()
+
+            Text("All Reminders Completed")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+
+            Spacer(minLength: 10)
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal, 16)
     }
 }
 
-// convenience so Color("name", default:) works even if the asset is missing
-private extension Color {
-    init(_ name: String, bundle: Bundle = .main, default fallback: Color) {
-        if let color = Color(named: name, in: bundle) { self = color } else { self = fallback }
-    }
-    // load optional asset color by name
-    static func named(_ name: String, in bundle: Bundle = .main) -> Color? {
-        guard UIImage(named: name, in: bundle, with: nil) != nil else { return nil }
-        return Color(name)
-    }
-    init?(named name: String, in bundle: Bundle = .main) {
-        guard UIImage(named: name, in: bundle, with: nil) != nil else { return nil }
-        self.init(name)
-    }
-}
-
+// MARK: - Waiting bar used when there are pending reminders
 private struct WaitingBar: View {
     let completed: Int
     let total: Int
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Your plants are waiting for a sip 💦")
-                .font(.subheadline).foregroundStyle(.secondary)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
             ProgressView(value: Double(completed), total: Double(max(total, 1)))
                 .tint(.green)
         }
@@ -214,23 +203,6 @@ private struct WaitingBar: View {
     }
 }
 
-private struct AllDoneHero: View {
-    var body: some View {
-        HStack(spacing: 16) {
-            Image("PlantMascotWink")
-                .resizable()
-                .scaledToFit()
-                .frame(height: 70)
-            VStack(alignment: .leading, spacing: 6) {
-                Text("All Done! 🎉").font(.title3).bold()
-                Text("All Reminders Completed")
-                    .font(.caption).foregroundStyle(.secondary)
-            }
-            Spacer()
-        }
-        .glass()
-    }
-}
 
 
 #Preview {

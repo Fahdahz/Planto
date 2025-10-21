@@ -12,7 +12,7 @@ struct PlantFormState {
     var name: String = ""
     var room: Room = .bedroom
     var light: LightLevel = .high
-    var waterAmount: String = "20–50 ml"
+    var waterAmount: Water = .full
     var frequency: WateringFrequency = .everyDay
 
     init() {}
@@ -21,7 +21,7 @@ struct PlantFormState {
         self.name = plant.name
         self.room = plant.room
         self.light = plant.light
-        self.waterAmount = plant.waterAmountLabel
+        self.waterAmount = plant.waterAmount
         self.frequency = plant.frequency
     }
 
@@ -31,7 +31,7 @@ struct PlantFormState {
             name: name.trimmingCharacters(in: .whitespacesAndNewlines),
             room: room,
             light: light,
-            waterAmountLabel: waterAmount.trimmingCharacters(in: .whitespacesAndNewlines),
+            waterAmount: waterAmount,
             frequency: frequency,
             isDoneToday: keepDone ? (original?.isDoneToday ?? false) : false
         )
