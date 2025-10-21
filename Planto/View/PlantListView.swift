@@ -9,8 +9,6 @@ import SwiftUI
 
 struct PlantListView: View {
     @StateObject private var vm = PlantListViewModel()
-
-    // Sheet state
     @State private var form = PlantFormState()
 
     var body: some View {
@@ -18,23 +16,23 @@ struct PlantListView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
 
-                    // Title + divider (always visible)
+                  
                     VStack(spacing: 8) {
                         HStack {
                             Text("My Plants 🌱")
-                                .font(.largeTitle).bold()
+                                .font(.system(size: 34, weight: .bold))   // large title
                             Spacer()
                         }
-                        Divider()
+                        Divider().opacity(0.85)
+                            .background(Color.white.opacity(0.70))
                     }
                     .padding(.top, 8)
 
                     // ---- Empty vs. List ----
                     if vm.totalCount == 0 {
-                        // FULL-PAGE START SCREEN (no card)
                         StartScreenView(onAdd: { startAdding() })
                     } else {
-                        // WHEN WE HAVE PLANTS: show progress + list
+                        // Progress / list screen (today reminder)
                         if vm.allDone {
                             AllDoneHero()
                         } else {
@@ -70,7 +68,6 @@ struct PlantListView: View {
                 .padding(20)
             }
         }
-        // Present the sheet for add/edit (works in both empty & non-empty states)
         .sheet(isPresented: $vm.showingForm) {
             PlantFormSheet(
                 mode: vm.formMode,
@@ -85,11 +82,10 @@ struct PlantListView: View {
     }
 
     // MARK: - Sheet actions
-
     private func startAdding() {
         vm.formMode = .add(nil)
         form = PlantFormState()
-        vm.showingForm = true                     // ← opens the sheet
+        vm.showingForm = true
     }
 
     private func startEditing(_ plant: Plant) {
@@ -105,9 +101,7 @@ struct PlantListView: View {
         case .edit(let original):
             vm.update(state.buildPlant(editing: original.id, keepDone: true, original: original))
         }
-        vm.showingForm = false                    // dismiss sheet
-        // After dismiss: if it's the first plant, the UI automatically switches
-        // from StartScreenView to the Today list and reveals the + button.
+        vm.showingForm = false
     }
 
     private func handleDeleteIfEditing(_ mode: PlantListViewModel.FormMode) {
@@ -116,46 +110,95 @@ struct PlantListView: View {
     }
 }
 
-// MARK: - Full-page start screen (no card)
+// MARK: - Full-page start screen (exactly like the sketch: no card)
 private struct StartScreenView: View {
     var onAdd: () -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer(minLength: 20)
+        VStack(spacing: 28) {
+            Spacer(minLength: 10)
 
-            // Illustration (use your asset name)
+           
             Image("Plant")
                 .resizable()
                 .scaledToFit()
-                .frame(height: 220)
-                .shadow(radius: 12)
+                .frame(height: 225)
+                .accessibilityHidden(true)
 
-            VStack(spacing: 8) {
+            // Headline + paragraph
+            VStack(spacing: 10) {
                 Text("Start your plant journey!")
-                    .font(.title2).bold()
-                Text("Now all your plants will be in one place and we will help you take care of them 🪴")
-                    .font(.callout)
+                    .font(.system(size: 28, weight: .semibold))
+                    .padding(.bottom, 15)
+                Text("Now all your plants will be in one place and we will help you take care of them :) 🪴")
+                    .font(.headline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
+                    .frame(maxWidth: 520)
+                    .padding(.horizontal, 8)
             }
+            .frame(maxWidth: .infinity, alignment: .center)
 
-            Button {
-                onAdd()                            // ← opens the sheet
-            } label: {
-                Text("Set Plant Reminder").font(.headline)
+            // Solid green capsule button (like the sketch)
+            Button(action: onAdd) {
+                Text("Set Plant Reminder")
+                    .font(.headline)
+                    .frame(maxWidth: 300, minHeight: 35)
+                
             }
-            .buttonStyle(GlassButtonStyle())
-            .tint(Color("GreenBtn"))               // or .green if no asset
-
+            .buttonStyle(.glassProminent)
+            .tint(Color("GreenBtn"))
+            .padding(.top, 95)
+            
             Spacer(minLength: 60)
         }
         .frame(maxWidth: .infinity, alignment: .top)
     }
 }
 
-// MARK: - Small helpers for the non-empty state
+// MARK: - Styles / helpers
+
+/// solid green capsule (sketch look). Uses your "GreenBtn" color if present; falls back to a gradient.
+private struct GreenCapsuleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color("GreenBtn", bundle: .main, default: Color.green.opacity(0.90)),
+                                Color("GreenBtn", bundle: .main, default: Color.green).opacity(0.75)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            )
+            .foregroundStyle(.white)
+            .overlay(
+                Capsule().stroke(.white.opacity(0.15), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.35), radius: 16, x: 0, y: 10)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+    }
+}
+
+// convenience so Color("name", default:) works even if the asset is missing
+private extension Color {
+    init(_ name: String, bundle: Bundle = .main, default fallback: Color) {
+        if let color = Color(named: name, in: bundle) { self = color } else { self = fallback }
+    }
+    // load optional asset color by name
+    static func named(_ name: String, in bundle: Bundle = .main) -> Color? {
+        guard UIImage(named: name, in: bundle, with: nil) != nil else { return nil }
+        return Color(name)
+    }
+    init?(named name: String, in bundle: Bundle = .main) {
+        guard UIImage(named: name, in: bundle, with: nil) != nil else { return nil }
+        self.init(name)
+    }
+}
 
 private struct WaitingBar: View {
     let completed: Int
@@ -174,7 +217,7 @@ private struct WaitingBar: View {
 private struct AllDoneHero: View {
     var body: some View {
         HStack(spacing: 16) {
-            Image("PlantMascotWink") // optional; swap or remove if not available
+            Image("PlantMascotWink")
                 .resizable()
                 .scaledToFit()
                 .frame(height: 70)
