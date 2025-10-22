@@ -119,7 +119,7 @@ struct PlantListView: View {
     }
 }
 
-// MARK: - Start screen (matches the sketch)
+
 private struct StartScreenView: View {
     var onAdd: () -> Void
 
@@ -187,7 +187,6 @@ private struct AllDoneScreen: View {
     }
 }
 
-// MARK: - Waiting bar used when there are pending reminders
 private struct WaitingBar: View {
     let completed: Int
     let total: Int
