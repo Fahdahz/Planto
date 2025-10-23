@@ -39,7 +39,7 @@ struct PlantRow: View {
             // MIDDLE: content
             VStack(alignment: .leading, spacing: 8) {
                 // room line
-                Label("in \(plant.room.rawValue)", systemImage: "location.north")
+                Label("in \(plant.room.rawValue)", systemImage: "location")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
@@ -50,13 +50,13 @@ struct PlantRow: View {
 
                 // badges
                 HStack(spacing: 8) {
-                    Badge(icon: "sun.max.fill",
+                    Badge(icon: "sun.max",
                           text: plant.light.rawValue,
                           bg: Color(.sRGB, red: 0.20, green: 0.20, blue: 0.10, opacity: 1),
                           fg: Color(red: 0.95, green: 0.90, blue: 0.55)) // warm yellow
 
                     // waterAmount is non-optional → no if-let, no ?.
-                    Badge(icon: "drop.fill",
+                    Badge(icon: "drop",
                           text: plant.waterAmount.rawValue,
                           bg: Color(.sRGB, white: 0.18, opacity: 1),
                           fg: Color(.systemTeal))

@@ -27,80 +27,95 @@ struct PlantFormSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // lighter dark background (not pure black)
+                // Lighter than pure black to match the mock
                 Color(.sRGB, white: 0.12, opacity: 1).ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: 18) {
 
-                        // HEADER (● X | Title | ✓ ●)
-                        SheetHeader(
-                            title: title,
-                            onClose: { dismiss() },
-                            onConfirm: { onSave(mode, form) }
-                        )
-                        .padding(.top, 8)
+                       
+                        HStack {
+                            Button { dismiss() } label: {
+                                Image(systemName: "xmark")
+                                    .font(.headline)
+                                    .frame(width: 38, height: 38)
+                                    .clipShape(Circle())
+                            }
+                            .buttonStyle(.glass)                     // <- Liquid Glass
+                            .tint(.white.opacity(0.22))              // dim, like the sketch)
 
-                        // GROUP 1 — Name
+                            Spacer()
+
+                            Text(title)
+                                .font(.headline)
+
+                            Spacer()
+
+                            Button { onSave(mode, form) } label: {
+                                Image(systemName: "checkmark")
+                                    .font(.headline)
+                                    .frame(width: 38, height: 38)
+                                    .clipShape(Circle())
+                            }
+                            .buttonStyle(.glassProminent)                     // <- Liquid Glass
+                            .tint(Color("GreenBtn"))                 // same green as first page
+                            
+                        }
+                        .padding(.horizontal, 8)
+
+                    
+                        // MARK: Group 1 — Plant Name (rounded field with WHITE placeholder)
                         GlassGroup {
-                            TextField("Plant Name", text: $form.name)
-                                .textInputAutocapitalization(.words)
-                                .submitLabel(.done)
-                                .padding(.vertical, 14)
-                                .padding(.horizontal, 18)
+                            PlaceholderTextField(
+                                text: $form.name,
+                                placeholder: "Plant Name",
+                                placeholderColor: .white,
+                                contentPadding: EdgeInsets(top: 14, leading: 18, bottom: 14, trailing: 18)
+                            )
+                            .textInputAutocapitalization(.words)
+                            .submitLabel(.done)
                         }
 
-                        // GROUP 2 — Room / Light  (Menu + Picker = iOS popup with ✓)
-                        GlassGroup {
+
+                        // MARK: Group 2 — Room / Light (menu-style pickers with chevrons)
+                        GlassGroup(spacing: 0) {
                             MenuPickerRow(
-                                title: "Room",
+                                label: "Room",
                                 systemImage: "location",
-                                selectionText: form.room.rawValue
-                            ) {
-                                Picker("", selection: $form.room) {
-                                    ForEach(Room.allCases) { Text($0.rawValue).tag($0) }
-                                }
-                            }
+                                selection: $form.room,
+                                all: Room.allCases.map { ($0.rawValue, $0) }
+                            )
 
                             Divider().overlay(Color.white.opacity(0.12))
 
                             MenuPickerRow(
-                                title: "Light",
+                                label: "Light",
                                 systemImage: "sun.max",
-                                selectionText: form.light.rawValue
-                            ) {
-                                Picker("", selection: $form.light) {
-                                    ForEach(LightLevel.allCases) { Text($0.rawValue).tag($0) }
-                                }
-                            }
+                                selection: $form.light,
+                                all: LightLevel.allCases.map { ($0.rawValue, $0) }
+                            )
                         }
 
-                        // GROUP 3 — Watering Days / Water
-                        GlassGroup {
+                        // MARK: Group 3 — Watering Days / Water
+                        GlassGroup(spacing: 0) {
                             MenuPickerRow(
-                                title: "Watering Days",
+                                label: "Watering Days",
                                 systemImage: "drop",
-                                selectionText: form.frequency.rawValue
-                            ) {
-                                Picker("", selection: $form.frequency) {
-                                    ForEach(WateringFrequency.allCases) { Text($0.rawValue).tag($0) }
-                                }
-                            }
+                                selection: $form.frequency,
+                                all: WateringFrequency.allCases.map { ($0.rawValue, $0) }
+                            )
 
                             Divider().overlay(Color.white.opacity(0.12))
 
                             MenuPickerRow(
-                                title: "Water",
+                                label: "Water",
                                 systemImage: "drop",
-                                selectionText: form.waterAmount.rawValue
-                            ) {
-                                Picker("", selection: $form.waterAmount) {
-                                    ForEach(Water.allCases) { Text($0.rawValue).tag($0) }
-                                }
-                            }
+                                selection: $form.waterAmount,
+                                all: Water.allCases.map { ($0.rawValue, $0) }
+                            )
                         }
 
-                        // Delete (edit only)
+                        // Delete (edit mode only)
                         if case .edit = mode {
                             Button(role: .destructive) {
                                 onDelete(mode)
@@ -109,7 +124,7 @@ struct PlantFormSheet: View {
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 14)
                             }
-                            .buttonStyle(.borderedProminent)
+                            .buttonStyle(.glass)                     // glass red looks great too
                             .tint(.red)
                             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                             .padding(.top, 8)
@@ -121,73 +136,17 @@ struct PlantFormSheet: View {
                     .padding(.bottom, 16)
                 }
             }
-            .navigationBarHidden(true) // custom header
+            .navigationBarHidden(true) // we draw our own header
         }
     }
 }
 
-//
-// MARK: - Header (round X and round green ✓)
-//
-private struct SheetHeader: View {
-    var title: String
-    var onClose: () -> Void
-    var onConfirm: () -> Void
-
-    var body: some View {
-        HStack {
-            CircleIconButton(systemName: "xmark", style: .dim, action: onClose)
-            Spacer()
-            Text(title).font(.headline)
-            Spacer()
-            CircleIconButton(systemName: "checkmark", style: .green, action: onConfirm)
-        }
-        .padding(.horizontal, 8)
-    }
-}
-
-private struct CircleIconButton: View {
-    enum Style { case dim, green }
-    var systemName: String
-    var style: Style
-    var action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: systemName)
-                .font(.headline)
-                .foregroundStyle(.white)
-                .frame(width: 38, height: 38)
-                .background(background)
-                .clipShape(Circle())
-                .overlay(Circle().stroke(.white.opacity(0.15), lineWidth: 1))
-                .shadow(color: .black.opacity(0.35), radius: 12, x: 0, y: 8)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(systemName == "xmark" ? "Close" : "Save")
-    }
-
-    @ViewBuilder
-    private var background: some View {
-        switch style {
-        case .dim:
-            Color.white.opacity(0.10)
-        case .green:
-            let g = Color.appGreen
-            LinearGradient(colors: [g, g.opacity(0.85)],
-                           startPoint: .topLeading,
-                           endPoint: .bottomTrailing)
-        }
-    }
-}
-
-//
-// MARK: - Group container (glass look)
-//
+// MARK: - Rounded “glass” group container
 private struct GlassGroup<Content: View>: View {
+    var spacing: CGFloat = 6
     @ViewBuilder var content: Content
     var body: some View {
-        VStack(spacing: 0) { content }
+        VStack(spacing: spacing) { content }
             .padding(.horizontal, 6)
             .padding(.vertical, 6)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
@@ -198,45 +157,67 @@ private struct GlassGroup<Content: View>: View {
     }
 }
 
-//
-// MARK: - Menu + Picker row (native popup with ✓)
-//
-private struct MenuPickerRow<PickerContent: View>: View {
-    var title: String
-    var systemImage: String
-    var selectionText: String
-    @ViewBuilder var picker: PickerContent
+// MARK: - White-placeholder TextField
+private struct PlaceholderTextField: View {
+    @Binding var text: String
+    var placeholder: String
+    var placeholderColor: Color = .white
+    var contentPadding: EdgeInsets = .init()
 
     var body: some View {
-        Menu {
-            picker
-        } label: {
-            HStack {
-                Label(title, systemImage: systemImage)
-                    .foregroundStyle(.primary)
-                Spacer()
-                // match iOS row with trailing text + chevron-down indicator
+        ZStack(alignment: .leading) {
+            if text.isEmpty {
+                Text(placeholder)
+                    .foregroundColor(placeholderColor)
+                    .opacity(0.95)
+                    .padding(contentPadding)
+            }
+            TextField("", text: $text)
+                .padding(contentPadding)
+        }
+    }
+}
+
+// MARK: - Menu-style picker row (popup like iOS)
+private struct MenuPickerRow<T: Hashable>: View {
+    let label: String
+    let systemImage: String
+    @Binding var selection: T
+    let all: [(String, T)] // display, value
+
+    var body: some View {
+        HStack {
+            Label(label, systemImage: systemImage)
+
+            Spacer(minLength: 8)
+
+            Menu {
+                ForEach(all, id: \.1) { pair in
+                    Button {
+                        selection = pair.1
+                    } label: {
+                        Label(pair.0, systemImage: selection == pair.1 ? "checkmark" : "")
+                    }
+                }
+            } label: {
                 HStack(spacing: 6) {
-                    Text(selectionText).foregroundStyle(.secondary)
+                    // current selected text on the right
+                    Text(display(for: selection))
+                        .foregroundStyle(.secondary)
                     Image(systemName: "chevron.down")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
+                .contentShape(Rectangle())
             }
-            .padding(.vertical, 12)
-            .padding(.horizontal, 14)
+            .buttonStyle(.plain)
         }
-        .menuStyle(.automatic)
-        .tint(.primary) // keep label colors neutral (not blue)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 14)
+    }
+
+    private func display(for value: T) -> String {
+        all.first(where: { $0.1 == value })?.0 ?? ""
     }
 }
 
-//
-// MARK: - Color helper (uses asset "GreenBtn" if present)
-//
-private extension Color {
-    static var appGreen: Color {
-        if UIColor(named: "GreenBtn") != nil { return Color("GreenBtn") }
-        return .green
-    }
-}

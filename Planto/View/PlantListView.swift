@@ -132,6 +132,7 @@ private struct StartScreenView: View {
                 .scaledToFit()
                 .frame(height: 200)
                 .accessibilityHidden(true)
+                .padding(50)
 
             VStack(spacing: 10) {
                 Text("Start your plant journey!")
@@ -153,7 +154,7 @@ private struct StartScreenView: View {
             }
             .buttonStyle(.glassProminent)       // Liquid Glass look
             .tint(Color("GreenBtn"))
-            .padding(.top, 95)
+            .padding(.top, 50)
 
             Spacer(minLength: 60)
         }
