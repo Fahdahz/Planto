@@ -38,7 +38,7 @@ struct PlantFormSheet: View {
                             Button { dismiss() } label: {
                                 Image(systemName: "xmark")
                                     .font(.headline)
-                                    .frame(width: 38, height: 38)
+                                    .frame(width: 20, height: 28)
                                     .clipShape(Circle())
                             }
                             .buttonStyle(.glass)                     // <- Liquid Glass
@@ -54,7 +54,7 @@ struct PlantFormSheet: View {
                             Button { onSave(mode, form) } label: {
                                 Image(systemName: "checkmark")
                                     .font(.headline)
-                                    .frame(width: 38, height: 38)
+                                    .frame(width: 20, height: 28)
                                     .clipShape(Circle())
                             }
                             .buttonStyle(.glassProminent)                     // <- Liquid Glass
@@ -62,6 +62,7 @@ struct PlantFormSheet: View {
                             
                         }
                         .padding(.horizontal, 8)
+                        .padding(.top, 8)
 
                     
                         // MARK: Group 1 — Plant Name (rounded field with WHITE placeholder)

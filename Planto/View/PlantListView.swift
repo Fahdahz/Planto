@@ -13,73 +13,102 @@ struct PlantListView: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
 
-                    // Title + divider
-                    VStack(spacing: 8) {
-                        HStack {
-                            Text("My Plants 🌱")
-                                .font(.system(size: 34, weight: .bold))
-                            Spacer()
-                        }
-                        Divider()
-                            .frame(height: 1)
-                            .background(Color.white.opacity(0.25)) // visible on dark
+            // we cannot keep the ScrollView if we want swipe-to-delete,
+            // because List must own the scrolling.
+            VStack(alignment: .leading, spacing: 16) {
+
+                // Title + divider
+                VStack(spacing: 8) {
+                    HStack {
+                        Text("My Plants 🌱")
+                            .font(.system(size: 34, weight: .bold))
+                        Spacer()
                     }
-                    .padding(.top, 8)
+                    Divider()
+                        .frame(height: 1)
+                        .background(Color.white.opacity(0.25)) // visible on dark
+                }
+                .padding(.top, 8)
+                .padding(.horizontal, 16)
 
-                    // ---- Empty vs. All Done vs. List ----
-                    if vm.totalCount == 0 {
-                        // First-run start screen (matches sketch)
-                        StartScreenView(onAdd: { startAdding() })
-                    } else if vm.allDone {
-                        // Full-screen celebration (no list)
-                        AllDoneScreen()
-                            .padding(.top, 12)
-                            .frame(maxWidth: .infinity)
-                            .transition(.opacity)
-                        Spacer(minLength: 120) // room above floating +
-                    } else {
-                        // Today reminder: progress + list
-                        WaitingBar(completed: vm.completedCount, total: vm.totalCount)
+                // ---- Empty vs. All Done vs. List ----
+                if vm.totalCount == 0 {
+                    // First-run start screen (matches sketch)
+                    StartScreenView(onAdd: { startAdding() })
+                        .padding(.horizontal, 16)
 
-                        VStack(spacing: 10) {
-                            ForEach(vm.plants) { plant in
+                } else if vm.allDone {
+                    // Full-screen celebration (no list)
+                    AllDoneScreen()
+                        .padding(.top, 12)
+                        .frame(maxWidth: .infinity)
+                        .transition(.opacity)
+
+                    Spacer(minLength: 120) // room above floating +
+
+                } else {
+                    // Today reminder: progress + list
+
+                    // waiting bar stays above the list
+                    WaitingBar(
+                        completed: vm.completedCount,
+                        total: vm.totalCount
+                    )
+                    .padding(.horizontal, 16)
+
+                    // THIS is the only real change:
+                    // we render your rows inside a List with .onDelete
+                    List {
+                        ForEach(vm.plants) { plant in
+                            VStack(spacing: 0) {
                                 PlantRow(
                                     plant: plant,
                                     onToggle: { vm.toggleDone(plant) },
                                     onEdit:   { startEditing(plant) },
                                     onDelete: { vm.delete(plant) }
                                 )
-                                Divider()
-                                    .frame(height: 1)
-                                    .background(Color.white.opacity(0.25)) 
+
+                                // custom divider, but not after the last item
+                                if plant.id != vm.plants.last?.id {
+                                    Divider()
+                                        .frame(height: 1)
+                                        .background(Color.white.opacity(0.25))
+                                }
+                            }
+                            .listRowBackground(Color.black)
+                            .listRowSeparator(.hidden)
+                            .listSectionSeparator(.hidden, edges: .all) 
+                        }
+                        .onDelete { indexSet in
+                            for index in indexSet {
+                                let plant = vm.plants[index]
+                                vm.delete(plant)
                             }
                         }
-                        .padding(.top, 6)
-
-                        Spacer(minLength: 100)
-                        
-                        
                     }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .background(Color.black)
+
+
                 }
-                .padding(.horizontal, 16)
+
+                Spacer(minLength: 0)
             }
 
-          
             // Show the floating + ONLY after at least one plant exists
             if vm.totalCount > 0 {
                 Button(action: startAdding) {
                     Image(systemName: "plus")
                         .font(.title2.bold())
-                        .padding(18)
+                        .frame(width: 20, height: 28)
+                        .padding(8)
                 }
                 .buttonStyle(.glassProminent)
                 .tint(Color("GreenBtn"))
                 .padding(20)
             }
-
         }
         .sheet(isPresented: $vm.showingForm) {
             PlantFormSheet(
@@ -113,17 +142,27 @@ struct PlantListView: View {
         case .add:
             vm.add(state.buildPlant())
         case .edit(let original):
-            vm.update(state.buildPlant(editing: original.id, keepDone: true, original: original))
+            vm.update(
+                state.buildPlant(
+                    editing: original.id,
+                    keepDone: true,
+                    original: original
+                )
+            )
         }
         vm.showingForm = false
     }
 
     private func handleDeleteIfEditing(_ mode: PlantListViewModel.FormMode) {
-        if case .edit(let p) = mode { vm.delete(p) }
+        if case .edit(let p) = mode {
+            vm.delete(p)
+        }
         vm.showingForm = false
     }
 }
 
+
+// unchanged helper views below
 
 private struct StartScreenView: View {
     var onAdd: () -> Void
@@ -196,9 +235,20 @@ private struct AllDoneScreen: View {
 private struct WaitingBar: View {
     let completed: Int
     let total: Int
+
+    // dynamic message based on completed count
+    private var message: String {
+        if total == 0 { return "" }
+        if completed == 0 {
+            return "Your plants are waiting for a sip 💦"
+        } else {
+            return "\(completed) of your plants feel loved today ✨"
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Your plants are waiting for a sip 💦")
+            Text(message)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             ProgressView(value: Double(completed), total: Double(max(total, 1)))
