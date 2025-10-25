@@ -31,62 +31,47 @@ struct PlantRow: View {
                 } else {
                     Circle()
                         .strokeBorder(Color(.systemGray3), lineWidth: 2)
-                        .frame(width: 26, height: 26)
+                        .frame(width: 28, height: 28)
                 }
             }
             .buttonStyle(.plain)
 
-            // MIDDLE: content
-            VStack(alignment: .leading, spacing: 8) {
-                // room line
-                Label("in \(plant.room.rawValue)", systemImage: "location")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-
-                // name
-                Text(plant.name)
-                    .font(.system(size: 28, weight: .semibold))  // big like sketch
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                // badges
-                HStack(spacing: 8) {
-                    Badge(icon: "sun.max",
-                          text: plant.light.rawValue,
-                          bg: Color(.sRGB, red: 0.20, green: 0.20, blue: 0.10, opacity: 1),
-                          fg: Color(red: 0.95, green: 0.90, blue: 0.55)) // warm yellow
-
-                    // waterAmount is non-optional → no if-let, no ?.
-                    Badge(icon: "drop",
-                          text: plant.waterAmount.rawValue,
-                          bg: Color(.sRGB, white: 0.18, opacity: 1),
-                          fg: Color(.systemTeal))
-                }
-
-            }
-
-            // RIGHT: circular edit button
+            // TAPPABLE CONTENT to open edit sheet
             Button(action: onEdit) {
-                Image(systemName: "pencil")
-                    .font(.system(size: 16, weight: .semibold))
-                    .frame(width: 44, height: 44)
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("in \(plant.room.rawValue)", systemImage: "location")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+
+                    Text(plant.name)
+                        .font(.system(size: 28, weight: .semibold))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    HStack(spacing: 8) {
+                        Badge(
+                            icon: "sun.max",
+                            text: plant.light.rawValue,
+                            bg: Color(.sRGB, red: 0.20, green: 0.20, blue: 0.10, opacity: 1),
+                            fg: Color(red: 0.95, green: 0.90, blue: 0.55)
+                        )
+
+                        Badge(
+                            icon: "drop",
+                            text: plant.waterAmount.rawValue,
+                            bg: Color(.sRGB, white: 0.18, opacity: 1),
+                            fg: Color(.systemTeal)
+                        )
+                    }
+                }
+                .contentShape(Rectangle())
             }
-            .buttonStyle(.glass) // your Liquid Glass small style
-            .clipShape(Circle())
+            .buttonStyle(.plain)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(.regularMaterial)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(.white.opacity(0.08), lineWidth: 1)
-        )
+        .padding(.vertical, 8) // simpler spacing for List rows
     }
 }
 
-// MARK: - Small capsule badge (icon + text)
+// MARK: - Badge
 private struct Badge: View {
     let icon: String
     let text: String
@@ -112,6 +97,10 @@ private struct Badge: View {
 // convenience fallback
 private extension Color {
     init(_ name: String, bundle: Bundle = .main, default fallback: Color) {
-        if UIColor(named: name) != nil { self = Color(name) } else { self = fallback }
+        if UIColor(named: name) != nil {
+            self = Color(name)
+        } else {
+            self = fallback
+        }
     }
 }

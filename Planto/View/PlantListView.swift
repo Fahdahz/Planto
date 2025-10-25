@@ -52,11 +52,16 @@ struct PlantListView: View {
                                     onEdit:   { startEditing(plant) },
                                     onDelete: { vm.delete(plant) }
                                 )
+                                Divider()
+                                    .frame(height: 1)
+                                    .background(Color.white.opacity(0.25)) 
                             }
                         }
                         .padding(.top, 6)
 
                         Spacer(minLength: 100)
+                        
+                        
                     }
                 }
                 .padding(.horizontal, 16)
