@@ -9,6 +9,11 @@ import SwiftUI
 
 @main
 struct PlantoApp: App {
+    init() {
+        NotificationManager.shared.requestPermission()
+        NotificationManager.shared.scheduleDailyNotification(hour: 13, minute: 45) // 1:45 pm
+    }
+
     var body: some Scene {
         WindowGroup {
             PlantListView()
