@@ -14,39 +14,59 @@ struct PlantRow: View {
     var onDelete: () -> Void
 
     var body: some View {
-        HStack(alignment: .center, spacing: 14) {
+        VStack(alignment: .leading, spacing: 8) {
 
-            // LEFT: toggle circle / green check
-            Button(action: onToggle) {
-                if plant.isDoneToday {
-                    ZStack {
-                        Circle()
-                            .fill(Color("GreenBtn", bundle: .main, default: .green))
-                            .frame(width: 28, height: 28)
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.black.opacity(0.9))
-                    }
-                    .shadow(color: .black.opacity(0.25), radius: 6, x: 0, y: 3)
-                } else {
-                    Circle()
-                        .strokeBorder(Color(.systemGray3), lineWidth: 2)
-                        .frame(width: 28, height: 28)
-                }
+            // السطر اللي فيه المكان (in Bedroom...)
+            HStack(spacing: 6) {
+                Image(systemName: "location")
+                    .foregroundStyle(.secondary)
+                Text("in \(plant.room.rawValue)")
             }
-            .buttonStyle(.plain)
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
 
-            // TAPPABLE CONTENT to open edit sheet
-            Button(action: onEdit) {
+            HStack(alignment: .top, spacing: 12) {
+
+                // زر الـ check
+                Button(action: onToggle) {
+                    if plant.isDoneToday {
+                        ZStack {
+                            Circle()
+                                .fill(Color("GreenBtn", bundle: .main, default: .green))
+
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(.black.opacity(0.9))
+                        }
+                        .frame(width: 28, height: 28)
+                        // نفس إحساس صاحبتك: shadow فقط لما يكون متشيك
+                        .shadow(
+                            color: Color("GreenBtn", bundle: .main, default: .green).opacity(0.22),
+                            radius: 8,
+                            x: 0, y: 0
+                        )
+                    } else {
+                        Circle()
+                            .strokeBorder(Color(.systemGray3), lineWidth: 2)
+                            .frame(width: 28, height: 28)
+                    }
+                }
+                .buttonStyle(.plain)
+
+                // باقي تفاصيل النبات (اسم + البادجات)
                 VStack(alignment: .leading, spacing: 8) {
-                    Label("in \(plant.room.rawValue)", systemImage: "location")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
 
-                    Text(plant.name)
-                        .font(.system(size: 28, weight: .semibold))
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    // اسم النبتة - لما أضغط عليه يفتح شاشة التعديل
+                    Button(action: onEdit) {
+                        Text(plant.name)
+                            .font(.system(size: 28, weight: .semibold))
+                            // لو متشيك نخلي اللون secondary زي في سكرين صاحبتك
+                            .foregroundStyle(plant.isDoneToday ? .secondary : .primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .buttonStyle(.plain)
 
+                    // البادجات (اللايت والمويه)
                     HStack(spacing: 8) {
                         Badge(
                             icon: "sun.max",
@@ -63,15 +83,16 @@ struct PlantRow: View {
                         )
                     }
                 }
-                .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
         }
-        .padding(.vertical, 8) // simpler spacing for List rows
+        .padding(.vertical, 8)
+        // نخلي الصف كله tappable (نفس اللي تحبينه)
+        .contentShape(Rectangle())
+        .onTapGesture { onEdit() }
     }
 }
 
-// MARK: - Badge
+// نفس الـ Badge حقتك بالضبط
 private struct Badge: View {
     let icon: String
     let text: String
@@ -89,12 +110,13 @@ private struct Badge: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous).fill(bg)
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(bg)
         )
     }
 }
 
-// convenience fallback
+// fallback للألوان المخصصة (زي ما هو عندك)
 private extension Color {
     init(_ name: String, bundle: Bundle = .main, default fallback: Color) {
         if UIColor(named: name) != nil {

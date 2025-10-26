@@ -95,6 +95,8 @@ struct PlantListView: View {
                             }
                             .listRowBackground(Color.black)          // نحافظ على الخلفية السوداء
                             .listRowSeparator(.hidden)               // نشيل خط الـ List الافتراضي
+                            .listRowInsets(EdgeInsets(top: 3, leading: 16, bottom: 6, trailing: 16))
+
                         }
                         // حذف بعد الفرز (نفس منطق زميلتك)
                         .onDelete { offsets in
@@ -122,7 +124,9 @@ struct PlantListView: View {
                 Button(action: startAdding) {
                     Image(systemName: "plus")
                         .font(.title2.bold())
-                        .padding(18)
+                        .padding(12)
+                        .frame(width: 20, height: 28)
+
                 }
                 .buttonStyle(.glassProminent)
                 .tint(Color("GreenBtn"))
@@ -258,15 +262,13 @@ private struct AllDoneScreen: View {
 }
 
 
-// =================
-// MARK: - WaitingBar
-// =================
 private struct WaitingBar: View {
     let completed: Int
     let total: Int
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+
             // النص يتغير حسب كم وحدة خلصت
             if completed == 0 {
                 Text("Your plants are waiting for a sip 💦")
@@ -283,11 +285,20 @@ private struct WaitingBar: View {
                 total: Double(max(total, 1))
             )
             .tint(.green)
+            .accentColor(.green) // just in case for older iOS
         }
-        .glass()
+        .padding(12)
+        .background(
+            // خلفية سودة شوي فاتحة علشان تندمج مع الخلفية السوداء بدل ما تصير كارد رمادي
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.black.opacity(0.6))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                )
+        )
     }
 }
-
 
 #Preview {
     PlantListView()

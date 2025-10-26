@@ -12,8 +12,9 @@ struct PlantFormState {
     var name: String = ""
     var room: Room = .bedroom
     var light: LightLevel = .high
-    var waterAmount: Water = .full
     var frequency: WateringFrequency = .everyDay
+    var waterAmount: Water = .quarter
+
 
     init() {}
 
