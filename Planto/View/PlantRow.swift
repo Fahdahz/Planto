@@ -52,7 +52,7 @@ struct PlantRow: View {
                             icon: "sun.max",
                             text: plant.light.rawValue,
                             bg: Color(.sRGB, red: 0.20, green: 0.20, blue: 0.10, opacity: 1),
-                            fg: Color(red: 0.95, green: 0.90, blue: 0.55)
+                            fg: Color(.sRGB, red: 0.95, green: 0.90, blue: 0.55)
                         )
 
                         Badge(

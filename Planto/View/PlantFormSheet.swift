@@ -73,9 +73,10 @@ struct PlantFormSheet: View {
                                 placeholderColor: .white,
                                 contentPadding: EdgeInsets(top: 14, leading: 18, bottom: 14, trailing: 18)
                             )
-                            .textInputAutocapitalization(.words)
-                            .submitLabel(.done)
                         }
+
+                        
+                       
 
 
                         // MARK: Group 2 — Room / Light (menu-style pickers with chevrons)
@@ -158,26 +159,35 @@ private struct GlassGroup<Content: View>: View {
     }
 }
 
-// MARK: - White-placeholder TextField
+
+
+// MARK: - White-placeholder inline TextField
 private struct PlaceholderTextField: View {
     @Binding var text: String
-    var placeholder: String
+    var placeholder: String          // we'll use this as the inline label ("Plant Name")
     var placeholderColor: Color = .white
     var contentPadding: EdgeInsets = .init()
 
     var body: some View {
-        ZStack(alignment: .leading) {
-            if text.isEmpty {
-                Text(placeholder)
-                    .foregroundColor(placeholderColor)
-                    .opacity(0.95)
-                    .padding(contentPadding)
-            }
+        HStack(spacing: 6) {
+            // Always-visible leading label
+            Text(placeholder)
+                .foregroundColor(placeholderColor)
+                .opacity(0.95)
+                .fontWeight(.bold)
+
+
+            // Editable text entry continues after the label
             TextField("", text: $text)
-                .padding(contentPadding)
+                .textInputAutocapitalization(.words)
+                .submitLabel(.done)
+                .foregroundColor(.white)
         }
+        .padding(contentPadding)
     }
 }
+
+
 
 // MARK: - Menu-style picker row (popup like iOS)
 private struct MenuPickerRow<T: Hashable>: View {
@@ -221,4 +231,5 @@ private struct MenuPickerRow<T: Hashable>: View {
         all.first(where: { $0.1 == value })?.0 ?? ""
     }
 }
+
 

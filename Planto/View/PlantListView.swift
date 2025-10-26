@@ -14,11 +14,9 @@ struct PlantListView: View {
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
 
-            // we cannot keep the ScrollView if we want swipe-to-delete,
-            // because List must own the scrolling.
             VStack(alignment: .leading, spacing: 16) {
 
-                // Title + divider
+                // ===== العنوان + الديفايدر =====
                 VStack(spacing: 8) {
                     HStack {
                         Text("My Plants 🌱")
@@ -27,41 +25,60 @@ struct PlantListView: View {
                     }
                     Divider()
                         .frame(height: 1)
-                        .background(Color.white.opacity(0.25)) // visible on dark
+                        .background(Color.white.opacity(0.25))
                 }
                 .padding(.top, 8)
                 .padding(.horizontal, 16)
 
-                // ---- Empty vs. All Done vs. List ----
+                // ===== ثلاث حالات: فاضي / كلهم منجزين / لستة =====
                 if vm.totalCount == 0 {
-                    // First-run start screen (matches sketch)
+                    // أول مرة: الشاشة الفارغة
                     StartScreenView(onAdd: { startAdding() })
                         .padding(.horizontal, 16)
 
                 } else if vm.allDone {
-                    // Full-screen celebration (no list)
+                    // كلهم منجزين -> شاشة All Done
                     AllDoneScreen()
                         .padding(.top, 12)
                         .frame(maxWidth: .infinity)
                         .transition(.opacity)
+                        .padding(.horizontal, 16)
 
-                    Spacer(minLength: 120) // room above floating +
+                    Spacer(minLength: 120) // مساحة فوق زر +
 
                 } else {
-                    // Today reminder: progress + list
+                    // الحالة العادية: في نباتات وفي بعضها مو منجز
 
-                    // waiting bar stays above the list
+                    // البار اللي فوق الليست (نفس كودك القديم)
                     WaitingBar(
                         completed: vm.completedCount,
                         total: vm.totalCount
                     )
                     .padding(.horizontal, 16)
 
-                    // THIS is the only real change:
-                    // we render your rows inside a List with .onDelete
+                    // ===============================
+                    //  🔥 الفرز (الـ unchecked فوق)
+                    // ===============================
+                    //
+                    // isDoneToday = false  ⟶ فوق
+                    // isDoneToday = true   ⟶ تحت
+                    //
+                    let sortedPlants = vm.plants.sorted { a, b in
+                        let aDone = a.isDoneToday
+                        let bDone = b.isDoneToday
+                        if aDone == bDone {
+                            // نفس المجموعة → خَلّي ترتيبهم كما هو تقريباً
+                            return true
+                        }
+                        // اللي مو منجز (false) يطلع فوق اللي منجز (true)
+                        return (aDone == false) && (bDone == true)
+                    }
+
+                    // ===== الليست =====
                     List {
-                        ForEach(vm.plants) { plant in
+                        ForEach(sortedPlants) { plant in
                             VStack(spacing: 0) {
+
                                 PlantRow(
                                     plant: plant,
                                     onToggle: { vm.toggleDone(plant) },
@@ -69,41 +86,43 @@ struct PlantListView: View {
                                     onDelete: { vm.delete(plant) }
                                 )
 
-                                // custom divider, but not after the last item
-                                if plant.id != vm.plants.last?.id {
+                                // الـ Divider حقك إنتي
+                                if plant.id != sortedPlants.last?.id {
                                     Divider()
                                         .frame(height: 1)
                                         .background(Color.white.opacity(0.25))
                                 }
                             }
-                            .listRowBackground(Color.black)
-                            .listRowSeparator(.hidden)
-                            .listSectionSeparator(.hidden, edges: .all) 
+                            .listRowBackground(Color.black)          // نحافظ على الخلفية السوداء
+                            .listRowSeparator(.hidden)               // نشيل خط الـ List الافتراضي
                         }
-                        .onDelete { indexSet in
-                            for index in indexSet {
-                                let plant = vm.plants[index]
-                                vm.delete(plant)
+                        // حذف بعد الفرز (نفس منطق زميلتك)
+                        .onDelete { offsets in
+                            // offsets جاي من الـ sortedPlants
+                            let idsToDelete = offsets.map { sortedPlants[$0].id }
+
+                            // نحول الـ ids لموديلات الأصلية داخل vm.plants
+                            for id in idsToDelete {
+                                if let originalPlant = vm.plants.first(where: { $0.id == id }) {
+                                    vm.delete(originalPlant)
+                                }
                             }
                         }
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
                     .background(Color.black)
-
-
                 }
 
                 Spacer(minLength: 0)
             }
 
-            // Show the floating + ONLY after at least one plant exists
+            // ===== زر الـ + (نفس كودك) =====
             if vm.totalCount > 0 {
                 Button(action: startAdding) {
                     Image(systemName: "plus")
                         .font(.title2.bold())
-                        .frame(width: 20, height: 28)
-                        .padding(8)
+                        .padding(18)
                 }
                 .buttonStyle(.glassProminent)
                 .tint(Color("GreenBtn"))
@@ -117,14 +136,15 @@ struct PlantListView: View {
                 onSave: handleSave,
                 onDelete: handleDeleteIfEditing
             )
-            .presentationDetents([.large])          // full height sheet
-            .presentationDragIndicator(.hidden)     // hide grabber
-            .presentationBackground(.thinMaterial)  // lighter chrome
+            .presentationDetents([.large])
+            .presentationDragIndicator(.hidden)
+            .presentationBackground(.thinMaterial)
         }
         .preferredColorScheme(.dark)
+        .background(Color.black.ignoresSafeArea())
     }
 
-    // MARK: - Sheet actions
+    // MARK: - Actions (نفس اللي عندك)
     private func startAdding() {
         vm.formMode = .add(nil)
         form = PlantFormState()
@@ -162,8 +182,9 @@ struct PlantListView: View {
 }
 
 
-// unchanged helper views below
-
+// =======================
+// MARK: - StartScreenView
+// =======================
 private struct StartScreenView: View {
     var onAdd: () -> Void
 
@@ -196,7 +217,7 @@ private struct StartScreenView: View {
                     .font(.headline)
                     .frame(maxWidth: 300, minHeight: 35)
             }
-            .buttonStyle(.glassProminent)       // Liquid Glass look
+            .buttonStyle(.glassProminent)
             .tint(Color("GreenBtn"))
             .padding(.top, 50)
 
@@ -206,6 +227,10 @@ private struct StartScreenView: View {
     }
 }
 
+
+// =====================
+// MARK: - AllDoneScreen
+// =====================
 private struct AllDoneScreen: View {
     var body: some View {
         VStack(spacing: 24) {
@@ -232,32 +257,36 @@ private struct AllDoneScreen: View {
     }
 }
 
+
+// =================
+// MARK: - WaitingBar
+// =================
 private struct WaitingBar: View {
     let completed: Int
     let total: Int
 
-    // dynamic message based on completed count
-    private var message: String {
-        if total == 0 { return "" }
-        if completed == 0 {
-            return "Your plants are waiting for a sip 💦"
-        } else {
-            return "\(completed) of your plants feel loved today ✨"
-        }
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(message)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            ProgressView(value: Double(completed), total: Double(max(total, 1)))
-                .tint(.green)
+            // النص يتغير حسب كم وحدة خلصت
+            if completed == 0 {
+                Text("Your plants are waiting for a sip 💦")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("\(completed) of your plants feel loved today ✨")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            ProgressView(
+                value: Double(completed),
+                total: Double(max(total, 1))
+            )
+            .tint(.green)
         }
         .glass()
     }
 }
-
 
 
 #Preview {
