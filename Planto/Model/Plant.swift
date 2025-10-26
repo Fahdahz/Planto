@@ -17,9 +17,9 @@ enum Room: String, CaseIterable, Codable, Identifiable {
 }
 
 enum LightLevel: String, CaseIterable, Codable, Identifiable {
-    case low = "Low light"
-    case medium = "Partial sun"
     case high = "Full sun"
+    case medium = "Partial sun"
+    case low = "Low light"
     var id: String { rawValue }
 }
 

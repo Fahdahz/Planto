@@ -206,14 +206,20 @@ private struct StartScreenView: View {
             VStack(spacing: 10) {
                 Text("Start your plant journey!")
                     .font(.system(size: 28, weight: .semibold))
+                    .multilineTextAlignment(.center)          // <- new
                     .padding(.bottom, 15)
+
                 Text("Now all your plants will be in one place and we will help you take care of them :) 🪴")
                     .font(.headline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
-                    .frame(maxWidth: 520)
-                    .padding(.horizontal, 8)
+                    .fixedSize(horizontal: false, vertical: true)  // <- new
+                    .padding(.horizontal, 10)                      // <- give it breathing room on small phones
             }
+            .frame(maxWidth: .infinity, alignment: .center)
+            
+            
+            
             .frame(maxWidth: .infinity, alignment: .center)
 
             Button(action: onAdd) {

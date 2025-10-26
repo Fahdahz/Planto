@@ -11,7 +11,7 @@ import SwiftUI
 struct PlantoApp: App {
     init() {
         NotificationManager.shared.requestPermission()
-        NotificationManager.shared.scheduleDailyNotification(hour: 13, minute: 45) // 1:45 pm
+        NotificationManager.shared.scheduleDailyNotification(hour: 00, minute: 47) // 11:15 am
     }
 
     var body: some Scene {
