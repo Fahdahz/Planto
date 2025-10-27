@@ -26,7 +26,7 @@ extension View {
     func glass(corner: CGFloat = 20) -> some View { modifier(GlassBackground(corner: corner)) }
 }
 
-/// Capsule button with glass look
+// Capsule button with glass look
 struct GlassButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

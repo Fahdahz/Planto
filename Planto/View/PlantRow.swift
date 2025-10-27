@@ -16,7 +16,6 @@ struct PlantRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
 
-            // السطر اللي فيه المكان (in Bedroom...)
             HStack(spacing: 6) {
                 Image(systemName: "location")
                     .foregroundStyle(.secondary)
@@ -27,7 +26,7 @@ struct PlantRow: View {
 
             HStack(alignment: .top, spacing: 12) {
 
-                // زر الـ check
+                //Check button
                 Button(action: onToggle) {
                     if plant.isDoneToday {
                         ZStack {
@@ -39,8 +38,7 @@ struct PlantRow: View {
                                 .foregroundColor(.black.opacity(0.9))
                         }
                         .frame(width: 28, height: 28)
-                        // نفس إحساس صاحبتك: shadow فقط لما يكون متشيك
-                        .shadow(
+                        .shadow( // shadow when a plant is checked
                             color: Color("GreenBtn", bundle: .main, default: .green).opacity(0.22),
                             radius: 8,
                             x: 0, y: 0
@@ -53,20 +51,18 @@ struct PlantRow: View {
                 }
                 .buttonStyle(.plain)
 
-                // باقي تفاصيل النبات (اسم + البادجات)
                 VStack(alignment: .leading, spacing: 8) {
 
-                    // اسم النبتة - لما أضغط عليه يفتح شاشة التعديل
+                    //Opens edit sheet when pressed
                     Button(action: onEdit) {
                         Text(plant.name)
                             .font(.system(size: 28, weight: .semibold))
-                            // لو متشيك نخلي اللون secondary زي في سكرين صاحبتك
                             .foregroundStyle(plant.isDoneToday ? .secondary : .primary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .buttonStyle(.plain)
 
-                    // البادجات (اللايت والمويه)
+                    //light and water badges
                     HStack(spacing: 8) {
                         Badge(
                             icon: "sun.max",
@@ -86,13 +82,11 @@ struct PlantRow: View {
             }
         }
         .padding(.vertical, 8)
-        // نخلي الصف كله tappable (نفس اللي تحبينه)
         .contentShape(Rectangle())
         .onTapGesture { onEdit() }
     }
 }
 
-// نفس الـ Badge حقتك بالضبط
 private struct Badge: View {
     let icon: String
     let text: String
@@ -116,7 +110,6 @@ private struct Badge: View {
     }
 }
 
-// fallback للألوان المخصصة (زي ما هو عندك)
 private extension Color {
     init(_ name: String, bundle: Bundle = .main, default fallback: Color) {
         if UIColor(named: name) != nil {

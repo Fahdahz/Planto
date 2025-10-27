@@ -3,7 +3,8 @@
 //  Planto
 //
 //  Created by Fahdah Alsamari on 29/04/1447 AH.
-//
+
+//Reusable badge that combines an icon and a short piece of text,
 
 import SwiftUI
 

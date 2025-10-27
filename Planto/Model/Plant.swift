@@ -7,6 +7,7 @@
 
 import Foundation
 
+//Room location for the plant
 enum Room: String, CaseIterable, Codable, Identifiable {
     case bedroom = "Bedroom"
     case livingRoom = "Living Room"
@@ -16,6 +17,7 @@ enum Room: String, CaseIterable, Codable, Identifiable {
     var id: String { rawValue }
 }
 
+//How much light the plant needs
 enum LightLevel: String, CaseIterable, Codable, Identifiable {
     case high = "Full sun"
     case medium = "Partial sun"
@@ -23,6 +25,7 @@ enum LightLevel: String, CaseIterable, Codable, Identifiable {
     var id: String { rawValue }
 }
 
+//How often the plant should be watered
 enum WateringFrequency: String, CaseIterable, Codable, Identifiable {
     case everyDay = "Every day"
     case every2Days = "Every 2 days"
@@ -33,6 +36,7 @@ enum WateringFrequency: String, CaseIterable, Codable, Identifiable {
     var id: String { rawValue }
 }
 
+//How much water the plant needs each time
 enum Water: String, CaseIterable, Codable, Identifiable {
     case quarter = "20-50 ml"
     case half = "50-100 ml"

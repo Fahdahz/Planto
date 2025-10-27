@@ -16,7 +16,8 @@ struct PlantListView: View {
 
             VStack(alignment: .leading, spacing: 16) {
 
-                // ===== العنوان + الديفايدر =====
+                
+               // -- Today reminder screen
                 VStack(spacing: 8) {
                     HStack {
                         Text("My Plants 🌱")
@@ -30,51 +31,42 @@ struct PlantListView: View {
                 .padding(.top, 8)
                 .padding(.horizontal, 16)
 
-                // ===== ثلاث حالات: فاضي / كلهم منجزين / لستة =====
+                //Empty list
                 if vm.totalCount == 0 {
-                    // أول مرة: الشاشة الفارغة
                     StartScreenView(onAdd: { startAdding() })
                         .padding(.horizontal, 16)
 
+                //All checked? -> All done screen
                 } else if vm.allDone {
-                    // كلهم منجزين -> شاشة All Done
                     AllDoneScreen()
                         .padding(.top, 12)
                         .frame(maxWidth: .infinity)
                         .transition(.opacity)
                         .padding(.horizontal, 16)
 
-                    Spacer(minLength: 120) // مساحة فوق زر +
+                    Spacer(minLength: 120)
 
                 } else {
-                    // الحالة العادية: في نباتات وفي بعضها مو منجز
 
-                    // البار اللي فوق الليست (نفس كودك القديم)
                     WaitingBar(
                         completed: vm.completedCount,
                         total: vm.totalCount
                     )
                     .padding(.horizontal, 16)
 
-                    // ===============================
-                    //  🔥 الفرز (الـ unchecked فوق)
-                    // ===============================
-                    //
-                    // isDoneToday = false  ⟶ فوق
-                    // isDoneToday = true   ⟶ تحت
-                    //
+                    // Checked plants goes down the list, Unchecked remains the same
+                    // isDoneToday = false  -> Up
+                    // isDoneToday = true -> goes down
                     let sortedPlants = vm.plants.sorted { a, b in
                         let aDone = a.isDoneToday
                         let bDone = b.isDoneToday
                         if aDone == bDone {
-                            // نفس المجموعة → خَلّي ترتيبهم كما هو تقريباً
                             return true
                         }
-                        // اللي مو منجز (false) يطلع فوق اللي منجز (true)
                         return (aDone == false) && (bDone == true)
                     }
 
-                    // ===== الليست =====
+                    //List of plants with deviders between them
                     List {
                         ForEach(sortedPlants) { plant in
                             VStack(spacing: 0) {
@@ -86,24 +78,20 @@ struct PlantListView: View {
                                     onDelete: { vm.delete(plant) }
                                 )
 
-                                // الـ Divider حقك إنتي
                                 if plant.id != sortedPlants.last?.id {
                                     Divider()
                                         .frame(height: 1)
                                         .background(Color.white.opacity(0.25))
                                 }
                             }
-                            .listRowBackground(Color.black)          // نحافظ على الخلفية السوداء
-                            .listRowSeparator(.hidden)               // نشيل خط الـ List الافتراضي
+                            .listRowBackground(Color.black)
+                            .listRowSeparator(.hidden)
                             .listRowInsets(EdgeInsets(top: 3, leading: 16, bottom: 6, trailing: 16))
 
                         }
-                        // حذف بعد الفرز (نفس منطق زميلتك)
                         .onDelete { offsets in
-                            // offsets جاي من الـ sortedPlants
                             let idsToDelete = offsets.map { sortedPlants[$0].id }
 
-                            // نحول الـ ids لموديلات الأصلية داخل vm.plants
                             for id in idsToDelete {
                                 if let originalPlant = vm.plants.first(where: { $0.id == id }) {
                                     vm.delete(originalPlant)
@@ -119,7 +107,7 @@ struct PlantListView: View {
                 Spacer(minLength: 0)
             }
 
-            // ===== زر الـ + (نفس كودك) =====
+            // + button to set new reminder
             if vm.totalCount > 0 {
                 Button(action: startAdding) {
                     Image(systemName: "plus")
@@ -148,7 +136,6 @@ struct PlantListView: View {
         .background(Color.black.ignoresSafeArea())
     }
 
-    // MARK: - Actions (نفس اللي عندك)
     private func startAdding() {
         vm.formMode = .add(nil)
         form = PlantFormState()
@@ -186,9 +173,7 @@ struct PlantListView: View {
 }
 
 
-// =======================
-// MARK: - StartScreenView
-// =======================
+// -- Start your plant journey screen
 private struct StartScreenView: View {
     var onAdd: () -> Void
 
@@ -206,21 +191,18 @@ private struct StartScreenView: View {
             VStack(spacing: 10) {
                 Text("Start your plant journey!")
                     .font(.system(size: 28, weight: .semibold))
-                    .multilineTextAlignment(.center)          // <- new
+                    .multilineTextAlignment(.center)
                     .padding(.bottom, 15)
 
                 Text("Now all your plants will be in one place and we will help you take care of them :) 🪴")
                     .font(.headline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)  // <- new
-                    .padding(.horizontal, 10)                      // <- give it breathing room on small phones
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 10)
             }
             .frame(maxWidth: .infinity, alignment: .center)
             
-            
-            
-            .frame(maxWidth: .infinity, alignment: .center)
 
             Button(action: onAdd) {
                 Text("Set Plant Reminder")
@@ -238,9 +220,7 @@ private struct StartScreenView: View {
 }
 
 
-// =====================
-// MARK: - AllDoneScreen
-// =====================
+// -- All Done Screen
 private struct AllDoneScreen: View {
     var body: some View {
         VStack(spacing: 24) {
@@ -267,41 +247,37 @@ private struct AllDoneScreen: View {
     }
 }
 
-
+// -- Progress bar
 private struct WaitingBar: View {
     let completed: Int
     let total: Int
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-
-            // النص يتغير حسب كم وحدة خلصت
+        VStack(alignment: .center, spacing: 10) {
             if completed == 0 {
                 Text("Your plants are waiting for a sip 💦")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
             } else {
                 Text("\(completed) of your plants feel loved today ✨")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
             }
 
             ProgressView(
                 value: Double(completed),
                 total: Double(max(total, 1))
             )
-            .tint(.green)
-            .accentColor(.green) // just in case for older iOS
+            .tint(Color("GreenProg"))
+            .frame(maxWidth: .infinity)
         }
+        .frame(maxWidth: .infinity)
         .padding(12)
         .background(
-            // خلفية سودة شوي فاتحة علشان تندمج مع الخلفية السوداء بدل ما تصير كارد رمادي
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(Color.black.opacity(0.6))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                )
         )
     }
 }

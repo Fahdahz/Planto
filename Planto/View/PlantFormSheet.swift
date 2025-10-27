@@ -27,7 +27,6 @@ struct PlantFormSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Lighter than pure black to match the mock
                 Color(.sRGB, white: 0.12, opacity: 1).ignoresSafeArea()
 
                 ScrollView {
@@ -41,8 +40,8 @@ struct PlantFormSheet: View {
                                     .frame(width: 20, height: 28)
                                     .clipShape(Circle())
                             }
-                            .buttonStyle(.glass)                     // <- Liquid Glass
-                            .tint(.white.opacity(0.22))              // dim, like the sketch)
+                            .buttonStyle(.glass)
+                            .tint(.white.opacity(0.22))
 
                             Spacer()
 
@@ -57,15 +56,14 @@ struct PlantFormSheet: View {
                                     .frame(width: 20, height: 28)
                                     .clipShape(Circle())
                             }
-                            .buttonStyle(.glassProminent)                     // <- Liquid Glass
-                            .tint(Color("GreenBtn"))                 // same green as first page
+                            .buttonStyle(.glassProminent)
+                            .tint(Color("GreenBtn"))
                             
                         }
                         .padding(.horizontal, 8)
                         .padding(.top, 8)
 
-                    
-                        // MARK: Group 1 — Plant Name (rounded field with WHITE placeholder)
+                        // -- Textfield (Plant Name)
                         GlassGroup {
                             PlaceholderTextField(
                                 text: $form.name,
@@ -75,11 +73,7 @@ struct PlantFormSheet: View {
                             )
                         }
 
-                        
-                       
-
-
-                        // MARK: Group 2 — Room / Light (menu-style pickers with chevrons)
+                        // -- Picker (Room)
                         GlassGroup(spacing: 0) {
                             MenuPickerRow(
                                 label: "Room",
@@ -90,6 +84,7 @@ struct PlantFormSheet: View {
 
                             Divider().overlay(Color.white.opacity(0.12))
 
+                            // -- Picker (Light)
                             MenuPickerRow(
                                 label: "Light",
                                 systemImage: "sun.max",
@@ -98,7 +93,7 @@ struct PlantFormSheet: View {
                             )
                         }
 
-                        // MARK: Group 3 — Watering Days / Water
+                        // -- Picker (Watering Days)
                         GlassGroup(spacing: 0) {
                             MenuPickerRow(
                                 label: "Watering Days",
@@ -109,6 +104,7 @@ struct PlantFormSheet: View {
 
                             Divider().overlay(Color.white.opacity(0.12))
 
+                            // -- Picker (Water amount)
                             MenuPickerRow(
                                 label: "Water",
                                 systemImage: "drop",
@@ -117,7 +113,7 @@ struct PlantFormSheet: View {
                             )
                         }
 
-                        // Delete (edit mode only)
+                        // Delete plant in sheet (edit mode only)
                         if case .edit = mode {
                             Button(role: .destructive) {
                                 onDelete(mode)
@@ -126,7 +122,7 @@ struct PlantFormSheet: View {
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 14)
                             }
-                            .buttonStyle(.glass)                     // glass red looks great too
+                            .buttonStyle(.glass)
                             .tint(.red)
                             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                             .padding(.top, 8)
@@ -138,12 +134,12 @@ struct PlantFormSheet: View {
                     .padding(.bottom, 16)
                 }
             }
-            .navigationBarHidden(true) // we draw our own header
+            .navigationBarHidden(true)
         }
     }
 }
 
-// MARK: - Rounded “glass” group container
+// liquid glass effect and shape
 private struct GlassGroup<Content: View>: View {
     var spacing: CGFloat = 6
     @ViewBuilder var content: Content
@@ -160,24 +156,21 @@ private struct GlassGroup<Content: View>: View {
 }
 
 
-
-// MARK: - White-placeholder inline TextField
+//Placeholder TextField "Plant Name"
 private struct PlaceholderTextField: View {
     @Binding var text: String
-    var placeholder: String          // we'll use this as the inline label ("Plant Name")
+    var placeholder: String
     var placeholderColor: Color = .white
     var contentPadding: EdgeInsets = .init()
 
     var body: some View {
         HStack(spacing: 6) {
-            // Always-visible leading label
             Text(placeholder)
                 .foregroundColor(placeholderColor)
                 .opacity(0.95)
                 .fontWeight(.bold)
 
-
-            // Editable text entry continues after the label
+            // Editable text entry after the label
             TextField("", text: $text)
                 .textInputAutocapitalization(.words)
                 .submitLabel(.done)
@@ -188,8 +181,7 @@ private struct PlaceholderTextField: View {
 }
 
 
-
-// MARK: - Menu-style picker row (popup like iOS)
+// Picker
 private struct MenuPickerRow<T: Hashable>: View {
     let label: String
     let systemImage: String
@@ -231,5 +223,3 @@ private struct MenuPickerRow<T: Hashable>: View {
         all.first(where: { $0.1 == value })?.0 ?? ""
     }
 }
-
-
