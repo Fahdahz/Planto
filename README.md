@@ -10,8 +10,9 @@
   - Completed reminders automatically move to the bottom of the list.
 - **Progress Tracker**
   - See how many of your plants “feel loved today” through a dynamic progress bar.
--**Notifications**
+- **Notifications**
   - Receive reminders for your plant to ensure you never miss watering or checking on them, even when the app isn’t open.
+
 
 ## App icon
 
@@ -26,5 +27,5 @@
   <img src="https://github.com/user-attachments/assets/ee8910d7-568a-45f6-b58f-7a7fc7c8e087" width="120" height="270">
   <img src="https://github.com/user-attachments/assets/a42f84a6-8aa9-4283-864d-dd83d55bb5ce" width="120" height="270">
   <img src="https://github.com/user-attachments/assets/832f2e83-bbbb-44a9-97b8-6c75172adab0" width="120" height="270">
-  <img src="https://github.com/user-attachments/assets/906fa196-54c2-4602-af23-77aa8902869b" width="120" height="270">
+  <img src="https://github.com/user-attachments/assets/906fa196-54c2-4602-af23-77aa8902869b" width="120" height="280">
 </div>
