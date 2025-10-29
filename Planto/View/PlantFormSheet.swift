@@ -63,6 +63,7 @@ struct PlantFormSheet: View {
                         .padding(.horizontal, 8)
                         .padding(.top, 8)
 
+
                         // -- Textfield (Plant Name)
                         GlassGroup {
                             PlaceholderTextField(
@@ -207,7 +208,7 @@ private struct MenuPickerRow<T: Hashable>: View {
                     // current selected text on the right
                     Text(display(for: selection))
                         .foregroundStyle(.secondary)
-                    Image(systemName: "chevron.down")
+                    Image(systemName: "chevron.up.chevron.down")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
